@@ -1,32 +1,61 @@
+
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <v-app class="grey lighten-4">
+    <Navbar/>
+
+    <v-content class="mx-4 mb-4">
+      <router-view></router-view>
+    </v-content>
+
+  </v-app>
 </template>
 
+<script>
+  // eslint-disable-next-line no-unused-vars
+  import db from './fb'
+  // eslint-disable-next-line no-unused-vars
+  import firebase from 'firebase'
+  import Navbar from './components/Navbar'
+
+  export default {
+    components: { Navbar },
+    name: 'App',
+    data () {
+      return {
+        user:null,
+      }
+    },
+    mounted() {
+      let current_user = firebase.auth().currentUser;
+      if(current_user){
+        db.collection('users').doc(current_user.uid).get()
+              .then(user=>{
+                if (user.exists) {
+                  // eslint-disable-next-line no-console
+                  this.user = user.data()
+                }
+                else{
+                  // eslint-disable-next-line no-console
+                  console.log("User not found, contact admin");
+                  if(this.$route.path != '/login'){this.$router.push({name:'login'})}
+                }
+              })
+              .catch(err=>{
+                // eslint-disable-next-line no-console
+                console.log(err.message)
+              })
+    }
+     else{
+        // eslint-disable-next-line no-console
+        // console.log("User not logged in");
+        if(this.$route.path != '/login'){this.$router.push({name:'login'})}
+      }
+    }
+  }
+</script>
+
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
+  .v-application--wrap{
+     background: #f5f5f5;
+  }
 </style>
